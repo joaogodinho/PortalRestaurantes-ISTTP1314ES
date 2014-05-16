@@ -1,0 +1,151 @@
+package pt.ist.chequerefeicao.remote;
+
+import static javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY;
+
+import java.util.List;
+import java.util.Map;
+
+import javax.xml.registry.JAXRException;
+import javax.xml.ws.BindingProvider;
+
+import pt.chequerefeicao.ws.ChequeInexistente_Exception;
+import pt.chequerefeicao.ws.ChequeJaUsado_Exception;
+import pt.chequerefeicao.ws.ChequeNaoEndossavel_Exception;
+import pt.chequerefeicao.ws.ChequeRefeicaoPortType;
+import pt.chequerefeicao.ws.ChequeRefeicaoService;
+import pt.chequerefeicao.ws.UtilizadorInexistente_Exception;
+import pt.chequerefeicao.ws.ValorInvalido_Exception;
+import pt.ist.rest.mealcheck.MealCheckImplementor;
+import pt.ist.rest.mealcheck.exception.CheckAlreadyUsedException;
+import pt.ist.rest.mealcheck.exception.CheckNotExistsException;
+import pt.ist.rest.mealcheck.exception.InvalidCheckValueException;
+import pt.ist.rest.mealcheck.exception.NotEndorsableCheckException;
+import pt.ist.rest.mealcheck.exception.UserNotFoundException;
+import example.ws.uddi.UDDINaming;
+
+/**
+ * The Class ChequeRefeicaoClient.
+ */
+public class ChequeRefeicaoClient
+        implements MealCheckImplementor {
+
+    /**
+     * The port.
+     */
+    private ChequeRefeicaoPortType port;
+
+    /**
+     * Instantiates a new cheque refeicao client.
+     * 
+     * @param uddiURL the uddi url
+     * @param serverName the server name
+     */
+    public ChequeRefeicaoClient(String uddiURL, String serverName) {
+        if (uddiURL == null || serverName == null) {
+            throw new IllegalArgumentException("Argument(s) missing!");
+        }
+
+        String endpointAddress;
+        try {
+            System.out.printf("Contacting UDDI at %s%n", uddiURL);
+            UDDINaming uddiNaming = new UDDINaming(uddiURL);
+
+            System.out.printf("Looking for '%s'%n", serverName);
+            endpointAddress = uddiNaming.lookup(serverName);
+        } catch (JAXRException e1) {
+            System.err.println("Unable to get the server address: " + e1.getMessage());
+            return;
+        }
+
+        if (endpointAddress == null) {
+            System.out.println("Not found!");
+            return;
+        } else {
+            System.out.printf("Found %s%n", endpointAddress);
+        }
+
+        System.out.println("Creating stub ...");
+        ChequeRefeicaoService service = new ChequeRefeicaoService();
+        this.port = service.getChequeRefeicaoPort();
+
+        System.out.println("Setting endpoint address ...");
+        BindingProvider bindingProvider = (BindingProvider) port;
+        Map<String, Object> requestContext = bindingProvider.getRequestContext();
+
+        // set endpoint address
+        requestContext.put(ENDPOINT_ADDRESS_PROPERTY, endpointAddress);
+        System.out.printf("Remote call to %s ...%n", endpointAddress);
+
+    }
+
+    /* (non-Javadoc)
+     * @see pt.ist.rest.mealcheck.MealCheckImplementor#emitir(java.lang.String, int, boolean)
+     */
+    public String emitir(String titular, int valor, boolean endossavel) throws UserNotFoundException,
+            InvalidCheckValueException {
+        String result = null;
+        try {
+            result = this.port.emitir(titular, valor, endossavel);
+        } catch (UtilizadorInexistente_Exception e) {
+            throw new UserNotFoundException(e.getFaultInfo().getUtilizador());
+        } catch (ValorInvalido_Exception e) {
+            throw new InvalidCheckValueException(e.getFaultInfo().getValor());
+        }
+        return result;
+    }
+
+    /* (non-Javadoc)
+     * @see pt.ist.rest.mealcheck.MealCheckImplementor#sacar(java.lang.String, java.util.List)
+     */
+    public int sacar(String username, List<String> numeros) throws CheckNotExistsException,
+            CheckAlreadyUsedException,
+            UserNotFoundException {
+        // call using set endpoint address
+        Integer result = null;
+        try {
+            result = this.port.sacar(username, numeros);
+        } catch (ChequeInexistente_Exception e) {
+            throw new CheckNotExistsException(e.getFaultInfo().getNr());
+        } catch (ChequeJaUsado_Exception e) {
+            throw new CheckAlreadyUsedException(e.getFaultInfo().getNr());
+        } catch (UtilizadorInexistente_Exception e) {
+            throw new UserNotFoundException(e.getFaultInfo().getUtilizador());
+        }
+        return result == null ? -1 : result.intValue();
+    }
+
+    /* (non-Javadoc)
+     * @see pt.ist.rest.mealcheck.MealCheckImplementor#endossar(java.lang.String, java.lang.String, java.lang.String)
+     */
+    public String endossar(String titular, String terceiro, String numero) throws CheckNotExistsException,
+            CheckAlreadyUsedException,
+            NotEndorsableCheckException,
+            UserNotFoundException {
+        String result = null;
+        try {
+            result = this.port.endossar(titular, terceiro, numero);
+        } catch (ChequeInexistente_Exception e) {
+            throw new CheckNotExistsException(e.getFaultInfo().getNr());
+        } catch (ChequeJaUsado_Exception e) {
+            throw new CheckAlreadyUsedException(e.getFaultInfo().getNr());
+        } catch (ChequeNaoEndossavel_Exception e) {
+            throw new NotEndorsableCheckException(e.getFaultInfo().getNr());
+        } catch (UtilizadorInexistente_Exception e) {
+            throw new UserNotFoundException(e.getFaultInfo().getUtilizador());
+        }
+        return result;
+    }
+
+    /* (non-Javadoc)
+     * @see pt.ist.rest.mealcheck.MealCheckImplementor#listar(java.lang.String, boolean)
+     */
+    public List<String> listar(String titular, boolean sacados) throws UserNotFoundException {
+        List<String> result = null;
+        try {
+            result = this.port.listar(titular, sacados);
+        } catch (UtilizadorInexistente_Exception e) {
+            throw new UserNotFoundException(e.getFaultInfo().getUtilizador());
+        }
+        return result;
+    }
+}

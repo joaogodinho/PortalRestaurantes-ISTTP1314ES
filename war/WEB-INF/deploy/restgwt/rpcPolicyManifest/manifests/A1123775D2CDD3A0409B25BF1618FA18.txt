@@ -1,0 +1,2 @@
+serviceClass: pt.ist.rest.presentation.client.RestServlet
+path: 742E7227BEDAB6A9487860AC64AB5AC5.gwt.rpc

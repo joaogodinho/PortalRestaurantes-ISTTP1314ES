@@ -1,0 +1,102 @@
+package pt.ist.registofatura.remote.handler;
+
+import java.util.Set;
+
+import javax.xml.namespace.QName;
+import javax.xml.soap.Name;
+import javax.xml.soap.SOAPEnvelope;
+import javax.xml.soap.SOAPHeader;
+import javax.xml.soap.SOAPHeaderElement;
+import javax.xml.soap.SOAPMessage;
+import javax.xml.soap.SOAPPart;
+import javax.xml.ws.handler.MessageContext;
+import javax.xml.ws.handler.soap.SOAPHandler;
+import javax.xml.ws.handler.soap.SOAPMessageContext;
+
+import pt.ist.registofatura.remote.FrontEnd;
+
+// TODO: Auto-generated Javadoc
+/**
+ * This SOAPHandler shows how to set/get values from headers in inbound/outbound
+ * SOAP messages. A header is created in an outbound message and is read on an
+ * inbound message.
+ */
+public class HeaderHandler implements SOAPHandler<SOAPMessageContext> {
+
+    //
+    // Handler interface methods
+    //
+    /*
+     * (non-Javadoc)
+     * 
+     * @see javax.xml.ws.handler.soap.SOAPHandler#getHeaders()
+     */
+    public Set<QName> getHeaders() {
+        return null;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see javax.xml.ws.handler.Handler#handleMessage(javax.xml.ws.handler.
+     * MessageContext)
+     */
+    public boolean handleMessage(SOAPMessageContext smc) {
+
+        Boolean outboundElement = (Boolean) smc
+                .get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
+
+        try {// servidor
+            if (outboundElement.booleanValue()) {// saida
+
+                // get SOAP envelope
+                SOAPMessage msg = smc.getMessage();
+                SOAPPart sp = msg.getSOAPPart();
+                SOAPEnvelope se = sp.getEnvelope();
+                // add header
+                SOAPHeader sh = se.getHeader();
+                if (sh == null)
+                    sh = se.addHeader();
+
+                // add header element (name, namespace prefix, namespace)
+                Name ticket = se.createName("ticket", "tf", "http://demo");
+                SOAPHeaderElement ticketElement = sh.addHeaderElement(ticket);
+
+                Name seq = se.createName("seq", "tf", "http://demo");
+                SOAPHeaderElement seqElement = sh.addHeaderElement(seq);
+
+                String ticketValue = "" + FrontEnd.ticket;
+                ticketElement.addTextNode(ticketValue);
+                String seqValue = "" + FrontEnd.seq;
+                seqElement.addTextNode(seqValue);
+
+            }
+        } catch (Exception e) {
+            System.out.printf("Caught exception in handleMessage: %s%n", e);
+        }
+
+        return true;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * javax.xml.ws.handler.Handler#handleFault(javax.xml.ws.handler.MessageContext
+     * )
+     */
+    public boolean handleFault(SOAPMessageContext smc) {
+        return true;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * javax.xml.ws.handler.Handler#close(javax.xml.ws.handler.MessageContext)
+     */
+    public void close(MessageContext messageContext) {
+//        System.out.println("close");
+    }
+
+}

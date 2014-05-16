@@ -1,0 +1,128 @@
+package pt.ist.rest.domain;
+
+class RestaurantPortal {
+	double maxPrice;
+	String name;
+	int nif;
+}
+
+class User {
+	String name;
+	String username;
+	String password;
+}
+
+class Client extends User {
+	String email;
+	String address;
+	int nif;
+	double credit;
+}
+
+class Manager extends User;
+
+class Restaurant {
+	String name;
+	String address;
+}
+
+class Plate {
+	int id;
+	String name;
+	String type;
+	double calories;
+	double price;
+}
+
+class PlateQuantity {
+	int quantity;
+}
+
+class ShoppingCart;
+
+class OpenCart extends ShoppingCart;
+
+class ClosedCart extends ShoppingCart{
+	double total;
+}
+
+relation usersInPortal {
+	RestaurantPortal playsRole portal {
+		multiplicity 1;
+	}
+	User playsRole user {
+		multiplicity *;
+	}
+}
+
+relation restaurantsInPortal {
+	RestaurantPortal playsRole portal {
+		multiplicity 1;
+	}
+	Restaurant playsRole restaurant {
+		multiplicity *;
+	}
+}
+
+relation managersOfRestaurant {
+	Restaurant playsRole restaurant {
+		multiplicity 1;
+	}
+	Manager playsRole manager {
+		multiplicity *;
+	}
+}
+
+relation availableDishesInRestaurant {
+	Restaurant playsRole restaurant {
+		multiplicity 1;
+	}
+	Plate playsRole availablePlate {
+		multiplicity 0..15;
+	}
+}
+
+relation clientLikedPlates {
+	Client playsRole client {
+		multiplicity *;
+	}
+	Plate playsRole likedPlate {
+		multiplicity 0..15;
+	}
+}
+
+relation plateAmount {
+	Plate playsRole plate {
+		multiplicity 1;
+	}
+	PlateQuantity playsRole plateQuantity {
+		multiplicity *;
+	}
+}
+
+relation amountInCart {
+	ShoppingCart playsRole shoppingCart {
+		multiplicity *;
+	}
+	PlateQuantity playsRole plateQuantity {
+		multiplicity *;
+	}
+}
+
+relation ClientCart {
+	OpenCart playsRole openCart {
+		multiplicity 1;
+	}
+	Client playsRole client {
+		multiplicity 1;
+	}
+}
+
+relation ClientCartHistory {
+	ClosedCart playsRole clientCartHistory {
+		multiplicity *;
+	}
+	Client playsRole client {
+		multiplicity 1;
+	}
+}

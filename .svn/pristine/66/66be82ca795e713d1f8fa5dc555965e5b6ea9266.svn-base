@@ -1,0 +1,17 @@
+package pt.ist.rest.service.dto;
+
+import java.io.Serializable;
+
+/**
+ * The Class RestaurantPortalDto.
+ */
+public class RestaurantPortalDto
+        implements Serializable {
+
+    /** The Constant serialVersionUID. */
+    private static final long serialVersionUID = -7534164478454215008L;
+
+ // FIXME: must have this constructor
+    public RestaurantPortalDto() { }
+    
+}

@@ -1,0 +1,42 @@
+package pt.ist.rest.service.exception;
+
+import pt.ist.rest.service.dto.UserDto;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class CartAlreadyClosedException.
+ */
+public class CartAlreadyClosedException extends UserException {
+
+    /**
+     * The Constant serialVersionUID.
+     */
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * Instantiates a new cart already closed exception.
+     */
+    public CartAlreadyClosedException() {
+    }
+
+    /**
+     * Instantiates a new cart already closed exception.
+     * 
+     * @param message
+     *            the message
+     * @param user
+     *            the user
+     */
+    public CartAlreadyClosedException(String message, UserDto user) {
+        super(message, user);
+    }
+
+    /**
+     * Instantiates a new cart already closed exception.
+     *
+     * @param user the user
+     */
+    public CartAlreadyClosedException(UserDto user) {
+        super("O gestor que pretende criar ja existe na base de dados.", user);
+    }
+}

@@ -1,0 +1,80 @@
+package pt.ist.rest.service;
+
+import pt.ist.fenixframework.FenixFramework;
+import pt.ist.rest.domain.Client;
+import pt.ist.rest.domain.RestaurantPortal;
+import pt.ist.rest.domain.exception.NotEnoughCreditException;
+import pt.ist.rest.domain.exception.OperationNotAllowedException;
+import pt.ist.rest.domain.exception.RestException;
+import pt.ist.rest.domain.exception.UserNotFoundException;
+import pt.ist.rest.service.dto.SimpleClientDto;
+import pt.ist.rest.service.exception.CartAlreadyClosedException;
+import pt.ist.rest.service.exception.InsufficientCreditsException;
+import pt.ist.rest.service.exception.ServiceException;
+import pt.ist.rest.service.exception.UnknownUserException;
+
+/**
+ * The Class CloseClientCartService. This service implements the buying.
+ */
+public final class CloseClientCartService extends RestService {
+
+    /**
+     * The client dto.
+     */
+    private final SimpleClientDto clientDto;
+
+    /**
+     * Instantiates a new close client cart service.
+     * 
+     * @param client
+     *            the client
+     */
+    public CloseClientCartService(SimpleClientDto client) {
+        clientDto = client;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see pt.ist.rest.domain.service.RestService#dispatch()
+     */
+    @Override
+    protected void dispatch() throws ServiceException {
+        RestaurantPortal portal = FenixFramework.getRoot();
+        Client client;
+        try {
+            client = portal.getClientByUsername(this.clientDto.getUsername());
+
+            client.confirmCart();
+        } catch (UserNotFoundException e) {
+            throw new UnknownUserException(
+                    "Nao foi possivel encontrar o cliente na base de dados",
+                    clientDto);
+        } catch (OperationNotAllowedException e) {
+            throw new CartAlreadyClosedException(
+                    "O cliente nao tem um tabuleiro de compras aberto",
+                    clientDto);
+        } catch (NotEnoughCreditException e) {
+            throw new InsufficientCreditsException(clientDto);
+        } catch (RestException e) {
+            throw new ServiceException() {
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                protected String specificMessage() {
+                    return "Excepcao inesperada";
+                }
+            };
+        }
+    }
+
+    /**
+     * Gets the client dto.
+     * 
+     * @return the client dto
+     */
+    public SimpleClientDto getClientDto() {
+        return clientDto;
+    }
+
+}

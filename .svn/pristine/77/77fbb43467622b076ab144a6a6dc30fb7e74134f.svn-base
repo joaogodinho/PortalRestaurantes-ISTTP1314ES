@@ -1,0 +1,123 @@
+package pt.ist.rest.service.dto;
+
+/**
+ * The Class PlateDto.
+ * 
+ * Adds which restaurant contains that plate functionality.
+ */
+public class PlateDto extends SimplePlateDto {
+
+    /** The Constant serialVersionUID. */
+    private static final long serialVersionUID = 7177916559251374629L;
+
+    /**
+     * The restaurant dto.
+     */
+    private SimpleRestaurantDto restaurantDto;
+
+    /**
+     * Instantiates a new plate dto.
+     * 
+     * @param id
+     *            the plate id
+     * @param name
+     *            the plate name
+     * @param type
+     *            the plate type (Peixe, Carne, Vegetal)
+     * @param calories
+     *            the plate calories
+     * @param price
+     *            the plate price
+     * @param classification
+     *            the plate classification
+     * @param restaurant
+     *            the restaurant where the plate is available
+     */
+    public PlateDto(int id, String name, String type, double calories,
+            double price, double classification, SimpleRestaurantDto restaurant) {
+        super(id, name, type, calories, price, classification);
+        this.restaurantDto = restaurant;
+    }
+
+    public PlateDto(SimplePlateDto plate, SimpleRestaurantDto restaurant) {
+        this(plate.getId(), plate.getName(), plate.getType(), plate
+                .getCalories(), plate.getPrice(), plate.getClassification(),
+                restaurant);
+    }
+
+    // FIXME: must have this constructor
+    public PlateDto() { }
+
+    /**
+     * Instantiates a new plate dto.
+     * 
+     * @param id
+     *            the plate id
+     * @param name
+     *            the name
+     * @param type
+     *            the plate type (Peixe, Carne, Vegetal)
+     * @param calories
+     *            the calories
+     * @param price
+     *            the price
+     * @param restaurant
+     *            the restaurant
+     */
+    public PlateDto(int id, String name, String type, double calories,
+            double price, SimpleRestaurantDto restaurant) {
+        super(id, name, type, calories, price);
+        this.restaurantDto = restaurant;
+    }
+
+    /**
+     * Instantiates a new plate dto.
+     * 
+     * @param name
+     *            the name
+     * @param type
+     *            the plate type (Peixe, Carne, Vegetal)
+     * @param calories
+     *            the calories
+     * @param price
+     *            the price
+     * @param restaurant
+     *            the restaurant
+     */
+    public PlateDto(String name, String type, double calories, double price,
+            SimpleRestaurantDto restaurant) {
+        super(name, type, calories, price);
+        this.restaurantDto = restaurant;
+    }
+
+    /**
+     * Instantiates a new plate dto.
+     * 
+     * @param name
+     *            the name
+     * @param type
+     *            the plate type (Peixe, Carne, Vegetal)
+     * @param calories
+     *            the calories
+     * @param price
+     *            the price
+     * @param classification
+     *            the classification
+     * @param restaurant
+     *            the restaurant
+     */
+    public PlateDto(String name, String type, double calories, double price,
+            double classification, SimpleRestaurantDto restaurant) {
+        super(name, type, calories, price, classification);
+        this.restaurantDto = restaurant;
+    }
+
+    /**
+     * Gets the restaurant dto.
+     * 
+     * @return the restaurant dto
+     */
+    public SimpleRestaurantDto getRestaurantDto() {
+        return restaurantDto;
+    }
+}

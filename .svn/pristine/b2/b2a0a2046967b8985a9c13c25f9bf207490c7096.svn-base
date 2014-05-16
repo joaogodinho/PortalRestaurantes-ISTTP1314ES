@@ -1,0 +1,46 @@
+package pt.ist.rest.service.exception;
+
+import pt.ist.rest.service.dto.UserDto;
+
+/**
+ * The Class ManagerAlreadyExistsException.
+ * 
+ * Thrown when a manager already exists on application database.
+ */
+public class ManagerAlreadyExistsException extends UserException {
+
+    /**
+     * The Constant serialVersionUID.
+     */
+    private static final long serialVersionUID = 1L;
+
+    
+    public ManagerAlreadyExistsException() {
+    }
+    
+    /**
+     * Instantiates a new manager already exists exception.
+     * 
+     * @param message
+     *            Specific message indicating the error when thrown.
+     * @param manager
+     *            The manager that caused the exception.
+     */
+    public ManagerAlreadyExistsException(String message, UserDto manager) {
+        super(message, manager);
+    }
+    
+    public ManagerAlreadyExistsException(UserDto manager) {
+        super("O gestor ja existe no restaurante", manager);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see pt.ist.rest.domain.service.exception.UserException#specificMessage()
+     */
+    @Override
+    protected String specificMessage() {
+        return super.specificMessage();
+    }
+}

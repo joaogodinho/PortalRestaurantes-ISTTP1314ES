@@ -1,0 +1,57 @@
+package pt.ist.rest.service.exception;
+
+import pt.ist.rest.service.dto.UserDto;
+
+/**
+ * The Class ClientAlreadyExistsException.
+ * 
+ * Thrown when a cliente already exists on application database.
+ */
+public class ClientAlreadyExistsException extends UserException {
+
+    /**
+     * The Constant serialVersionUID.
+     */
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * Instantiates a new client already exists exception.
+     */
+    public ClientAlreadyExistsException() {
+    }
+
+    /**
+     * Instantiates a new client already exists exception.
+     * 
+     * @param message
+     *            Specific message indicating the error when thrown.
+     * @param manager
+     *            The client that caused the exception.
+     */
+    public ClientAlreadyExistsException(String message, UserDto manager) {
+        super(message, manager);
+    }
+
+    /**
+     * Instantiates a new client already exists exception.
+     * 
+     * @param message
+     *            Specific message indicating the error when thrown.
+     * @param manager
+     *            The client that caused the exception.
+     */
+    public ClientAlreadyExistsException(UserDto manager) {
+        super("O cliente que pretende criar ja existe na base de dados.", manager);
+    }
+    
+    /*
+     * (non-Javadoc)
+     * 
+     * @see pt.ist.rest.domain.service.exception.UserException#specificMessage()
+     */
+    @Override
+    protected String specificMessage() {
+        return super.specificMessage();
+    }
+
+}

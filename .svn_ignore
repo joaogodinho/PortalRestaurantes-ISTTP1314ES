@@ -1,0 +1,13 @@
+build
+db
+*.class
+*.jar
+lib
+gwt-unitCache
+.gwt
+war/restgwt
+restgwt.log
+war/WEB-INF/classes
+war/WEB-INF/deploy
+war/WEB-INF/images
+war/WEB-INF/lib

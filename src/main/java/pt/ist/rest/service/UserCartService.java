@@ -1,0 +1,92 @@
+package pt.ist.rest.service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import pt.ist.fenixframework.FenixFramework;
+import pt.ist.rest.Utilities.exception.InvalidClassificationException;
+import pt.ist.rest.domain.Client;
+import pt.ist.rest.domain.Plate;
+import pt.ist.rest.domain.PlateQuantity;
+import pt.ist.rest.domain.RestaurantPortal;
+import pt.ist.rest.domain.exception.UserNotFoundException;
+import pt.ist.rest.service.dto.PlateDto;
+import pt.ist.rest.service.dto.PlateQuantityDto;
+import pt.ist.rest.service.dto.ShoppingCartDto;
+import pt.ist.rest.service.dto.SimpleClientDto;
+import pt.ist.rest.service.dto.SimpleRestaurantDto;
+import pt.ist.rest.service.exception.NoOpenCartException;
+import pt.ist.rest.service.exception.ServiceException;
+import pt.ist.rest.service.exception.UnknownUserException;
+
+/**
+ * The Class UserCartService.
+ */
+public class UserCartService extends
+        RestService {
+
+    /** The client dto. */
+    private final SimpleClientDto clientDto;
+
+    /** The result. */
+    private ShoppingCartDto result = null;
+
+    /**
+     * Instantiates a new user cart service.
+     * 
+     * @param clientDto the client dto
+     */
+    public UserCartService(SimpleClientDto clientDto) {
+        this.clientDto = clientDto;
+    }
+
+    /* (non-Javadoc)
+     * @see pt.ist.rest.domain.service.RestService#dispatch()
+     */
+    @Override
+    protected void dispatch() throws ServiceException {
+        RestaurantPortal portal = FenixFramework.getRoot();
+        Client client;
+        try {
+            client = portal.getClientByUsername(this.clientDto.getUsername());
+        } catch (UserNotFoundException e) {
+            throw new UnknownUserException(this.clientDto);
+        }
+        List<PlateQuantityDto> plateQuantityDtos = new ArrayList<PlateQuantityDto>();
+        List<PlateQuantity> plateQuantities = null;
+        
+        if (client.getOpenCart() == null) {
+            throw new NoOpenCartException(this.clientDto);
+        }
+        plateQuantities = client.getOpenCart().getPlateQuantity();
+        
+        for (PlateQuantity plateQuantity : plateQuantities) {
+            int quantity = plateQuantity.getQuantity();
+            Plate plate = plateQuantity.getPlate();
+
+            SimpleRestaurantDto restaurant;
+            try {
+                restaurant = new SimpleRestaurantDto(plate.getRestaurant().getName(), plate
+                        .getRestaurant().getAddress(), plate.getRestaurant()
+                        .calculateClassification());
+            } catch (InvalidClassificationException e) {
+                restaurant = new SimpleRestaurantDto(plate.getRestaurant().getName(), plate
+                        .getRestaurant().getAddress(), 0);
+            }
+
+            PlateDto plateDto = new PlateDto(plate.getId(), plate.getName(), plate.getType(),
+                    plate.getCalories(), plate.getPrice(), plate.getPrice(), restaurant);
+            plateQuantityDtos.add(new PlateQuantityDto(plateDto, quantity));
+        }
+        result = new ShoppingCartDto(client.getCredit(), client.getOpenCart().getTotal(), plateQuantityDtos);
+    }
+
+    /**
+     * Gets the result.
+     * 
+     * @return the result
+     */
+    public ShoppingCartDto getResult() {
+        return result;
+    }
+}

@@ -1,0 +1,122 @@
+package pt.ist.rest.presentation.client.page;
+
+import pt.ist.rest.presentation.client.RestGWT;
+import pt.ist.rest.presentation.client.RestServletAsync;
+import pt.ist.rest.presentation.client.panel.ConfirmCartPanel;
+import pt.ist.rest.presentation.client.panel.OpenCartPanel;
+import pt.ist.rest.service.dto.PlateQuantityDto;
+import pt.ist.rest.service.dto.ShoppingCartDto;
+import pt.ist.rest.service.exception.NoOpenCartException;
+
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.RootPanel;
+
+/**
+ * The Class OpenCartPage.
+ */
+public class OpenCartPage extends
+        Composite {
+
+    /**
+     * The open cart panel.
+     */
+    private final OpenCartPanel openCartPanel;
+
+    /**
+     * The confirm cart panel.
+     */
+    private final ConfirmCartPanel confirmCartPanel;
+
+    /**
+     * The root page.
+     */
+    private RestGWT rootPage;
+
+    /**
+     * The rpc service.
+     */
+    private RestServletAsync rpcService;
+
+    /**
+     * Instantiates a new open cart page.
+     * 
+     * @param rootPage the root page
+     * @param rpcService the rpc service
+     */
+    public OpenCartPage(final RestGWT rootPage, final RestServletAsync rpcService) {
+        this.rpcService = rpcService;
+        this.rootPage = rootPage;
+
+        openCartPanel = new OpenCartPanel(rootPage, this, rpcService);
+        confirmCartPanel = new ConfirmCartPanel(rootPage, this, rpcService);
+    }
+
+    /**
+     * Hide page.
+     */
+    public void hidePage() {
+        RootPanel.get("cart").clear();
+    }
+
+    /**
+     * List open cart.
+     * 
+     * @param openCart the open cart
+     */
+    public final void listOpenCart(ShoppingCartDto openCart) {
+        openCartPanel.clearOpenCartTable();
+       
+        if (openCart.getPlateQuantities().isEmpty()) {
+            openCartPanel.showEmptyCartMessage();
+            return;
+        }
+
+        openCartPanel.addHeader();
+        
+        for (PlateQuantityDto plateQ : openCart.getPlateQuantities()) {
+            openCartPanel.addNewPlateToTable(plateQ);
+        }
+        openCartPanel.addTotal(openCart.getTotal());
+    }
+
+    /**
+     * Refresh open cart.
+     */
+    public void refreshOpenCart() {
+
+        rpcService.getOpenCart(this.rootPage.getActiveUser(), new AsyncCallback<ShoppingCartDto>() {
+            @Override
+            public void onFailure(Throwable caught) {
+                if (caught instanceof NoOpenCartException) {
+                    openCartPanel.clearOpenCartTable();
+                    openCartPanel.showEmptyCartMessage();
+                } else {
+                    caught.printStackTrace();
+                    GWT.log("presentation.client.page.OpenCartPage::rpcService.getOpenCart");
+                    GWT.log("-- Throwable: '" + caught.getClass().getName() + "'");
+                    Window.alert("ERROR: Cannot list open cart: " + caught.getMessage());
+                }
+            }
+
+            @Override
+            public void onSuccess(ShoppingCartDto result) {
+                listOpenCart(result);
+            }
+        });
+    }
+
+    /**
+     * Show page.
+     */
+    public void showPage() {
+
+        RootPanel divCart = RootPanel.get("cart");
+        divCart.add(openCartPanel);
+        divCart.add(confirmCartPanel);
+
+        refreshOpenCart();
+    }
+}

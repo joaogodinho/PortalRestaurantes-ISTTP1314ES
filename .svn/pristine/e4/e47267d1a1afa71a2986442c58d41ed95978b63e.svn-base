@@ -1,0 +1,159 @@
+package pt.ist.rest.domain;
+
+import pt.ist.rest.domain.exception.MaxNumberOfPlatesException;
+import pt.ist.rest.domain.exception.InvalidCreditException;
+import pt.ist.rest.domain.exception.NotEnoughCreditException;
+import pt.ist.rest.domain.exception.OperationNotAllowedException;
+import pt.ist.rest.domain.exception.PlateNotFoundException;
+
+/**
+ * The Class Client.
+ */
+public class Client extends
+        Client_Base {
+
+    /** The Constant MAX_NUMBER_DISHES_LIKED. */
+    private static final int MAX_NUMBER_DISHES_LIKED = 15;
+
+    /**
+     * Don't use this constructor, give preference to the following constructor:
+     * Client(String, String, String, String, String, int).
+     * 
+     * @see Client#Client(String, String, String, String, String, int)
+     */
+    public Client() {
+        super();
+    }
+
+    /**
+     * Instantiates a new client.
+     * 
+     * @param username the username
+     * @param password the password
+     * @param name the name
+     * @param email the email
+     * @param address the address
+     * @param nif the nif
+     */
+    public Client(String username,
+                  String password,
+                  String name,
+                  String email,
+                  String address,
+                  int nif) {
+        super();
+        init(username, password);
+        setName(name);
+        setEmail(email);
+        setAddress(address);
+        setNif(nif);
+        setCredit(0);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * pt.ist.rest.domain.Client_Base#addLikedPlate(pt.ist.rest.domain.Plate)
+     */
+    @Override
+    public void addLikedPlate(Plate plate) {
+        if (this.getLikedPlateCount() < MAX_NUMBER_DISHES_LIKED) {
+            super.addLikedPlate(plate);
+        } else {
+            throw new MaxNumberOfPlatesException(this, MAX_NUMBER_DISHES_LIKED);
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * pt.ist.rest.domain.Client_Base#removeLikedPlate(pt.ist.rest.domain.Plate)
+     */
+    public void removeLikedPlate(Plate plate) {
+        if (this.hasLikedPlate(plate)) {
+            super.removeLikedPlate(plate);
+        } else {
+            throw new IllegalArgumentException(String.format(
+                    "O utilizador %s nao tem o prato %s na sua lista de gostos",
+                    this.getUsername(), plate.getName()));
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see pt.ist.rest.domain.Client_Base#setCredit(double)
+     */
+    @Override
+    public void setCredit(double credit) {
+        if (credit >= 0) {
+            super.setCredit(credit);
+        } else {
+            throw new InvalidCreditException(this, credit);
+        }
+    }
+    
+    public void updateCredit(double credit) {
+        this.setCredit(this.getCredit() + credit);
+    }
+
+    public void addPlateToCart(Plate plate, int quantity) {
+        OpenCart cart = this.getOpenCart();
+        if (cart == null) {
+            if (quantity <= 0) {
+                throw new PlateNotFoundException(plate.getName());
+            }
+            cart = new OpenCart();
+            this.setOpenCart(cart);
+        }
+        if (cart.hasPlateQuantityById(plate.getId())) {
+            PlateQuantity plateQuantity = cart.getPlateQuantityById(plate.getId());
+            int finalQuantity = plateQuantity.getQuantity() + quantity;
+            if (finalQuantity > 0) {
+                plateQuantity.setQuantity(finalQuantity);
+            } else {
+                cart.removePlateQuantity(plateQuantity);
+            }
+        } else {
+            if (quantity <= 0) {
+                if (cart.getPlateQuantityCount() == 0)
+                    this.setOpenCart(null);
+                throw new PlateNotFoundException(plate.getName());
+            }
+            cart.addPlateQuantity(new PlateQuantity(plate, quantity));
+        }
+    }
+
+    public void confirmCart() {
+        OpenCart cart = this.getOpenCart();
+        if (cart == null || cart.getPlateQuantityCount() == 0) {
+            throw new OperationNotAllowedException("O cliente nao tem um tabuleiro aberto");
+        } else {
+            double credit = this.getCredit();
+            if (credit < cart.getTotal()) {
+                throw new NotEnoughCreditException(this, cart.getTotal());
+            } else {
+                this.setCredit(credit - cart.getTotal());
+                this.addClientCartHistory(new ClosedCart(cart));
+                this.setOpenCart(null);
+            }
+        }
+    }
+
+    public void emptyCart() {
+        this.setOpenCart(null);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see pt.ist.fenixframework.pstm.AbstractDomainObject#toString()
+     */
+    @Override
+    public String toString() {
+        return String.format("Client: %s, %s, %s, %s, %09d", getUsername(), getName(), getEmail(),
+                getAddress(), getNif());
+    }
+}

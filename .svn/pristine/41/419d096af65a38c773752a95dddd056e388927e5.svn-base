@@ -1,0 +1,65 @@
+package pt.ist.registofatura.remote;
+
+import static javax.xml.ws.BindingProvider.ENDPOINT_ADDRESS_PROPERTY;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.registry.JAXRException;
+import javax.xml.ws.BindingProvider;
+
+import example.ws.uddi.UDDINaming;
+import pt.registofatura.remote.ChequeRefeicaoService;
+import pt.ist.rest.invoiceregistry.InvoiceRegistryImplementor;
+import pt.registofatura.ws.Fatura;
+import pt.registofatura.ws.RegistoFaturaService;
+import pt.registofatura.ws.RegistoFaturaPortType;
+
+public class RegistoFaturaClient
+        implements InvoiceRegistryImplementor {
+
+    /**
+     * The port.
+     */
+    private RegistoFaturaPortType port;
+    
+    public RegistoFaturaClient(String uddiURL, String serverName) {
+        if (uddiURL == null || serverName == null) {
+            throw new IllegalArgumentException("Argument(s) missing!");
+        }
+
+        String endpointAddress;
+        try {
+            System.out.printf("Contacting UDDI at %s%n", uddiURL);
+            UDDINaming uddiNaming = new UDDINaming(uddiURL);
+
+            System.out.printf("Looking for '%s'%n", serverName);
+            endpointAddress = uddiNaming.lookup(serverName);
+        } catch (JAXRException e1) {
+            System.err.println("Unable to get the server address: " + e1.getMessage());
+            return;
+        }
+
+        if (endpointAddress == null) {
+            System.out.println("Not found!");
+            return;
+        } else {
+            System.out.printf("Found %s%n", endpointAddress);
+        }
+
+        System.out.println("Creating stub ...");
+        RegistoFaturaService service = new RegistoFaturaService();
+        this.port = service.getChequeRefeicaoPort();
+
+        System.out.println("Setting endpoint address ...");
+        BindingProvider bindingProvider = (BindingProvider) port;
+        Map<String, Object> requestContext = bindingProvider.getRequestContext();
+
+        // set endpoint address
+        requestContext.put(ENDPOINT_ADDRESS_PROPERTY, endpointAddress);
+        System.out.printf("Remote call to %s ...%n", endpointAddress);
+
+    }
+}

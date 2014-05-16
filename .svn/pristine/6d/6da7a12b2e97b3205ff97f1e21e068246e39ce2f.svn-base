@@ -1,0 +1,41 @@
+package pt.ist.rest.service.exception;
+
+import pt.ist.rest.service.dto.UserDto;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class InsufficientCreditsException.
+ */
+public class InsufficientCreditsException extends UserException {
+
+    /**
+     * The Constant serialVersionUID.
+     */
+    private static final long serialVersionUID = 1L;
+
+    public InsufficientCreditsException() {
+    }
+
+    /**
+     * Instantiates a new insufficient credits exception.
+     * 
+     * @param message
+     *            the message
+     * @param user
+     *            the user
+     */
+    public InsufficientCreditsException(String message, UserDto user) {
+        super(message, user);
+    }
+
+    public InsufficientCreditsException(UserDto user) {
+        super("O cliente nao tem creditos suficientes para efectuar a compra",
+                user);
+    }
+
+    @Override
+    protected String specificMessage() {
+        return super.specificMessage();
+    }
+
+}

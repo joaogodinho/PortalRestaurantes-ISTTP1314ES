@@ -1,0 +1,16 @@
+package pt.ist.rest.Utilities;
+
+/**
+ * The Enum TipoPrato.
+ */
+public enum PlateType {
+    
+    /** The carne. */
+    Carne,
+    
+    /** The peixe. */
+    Peixe,
+    
+    /** The vegetariano. */
+    Vegetariano
+}

@@ -1,0 +1,44 @@
+package pt.ist.rest.presentation.client.page;
+
+import pt.ist.rest.presentation.client.RestGWT;
+import pt.ist.rest.presentation.client.RestServletAsync;
+import pt.ist.rest.presentation.client.panel.SearchByNamePanel;
+import pt.ist.rest.presentation.client.panel.SearchByTypePanel;
+import pt.ist.rest.presentation.client.panel.SearchResultsListPanel;
+import pt.ist.rest.service.dto.PlateDto;
+import pt.ist.rest.service.dto.SearchPlatesDto;
+
+import com.google.gwt.user.client.ui.Composite;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class SearchPlatesPage.
+ */
+public class SearchPlatesPage extends
+        Composite {
+
+	private SearchByTypePanel searchByType;
+	private SearchByNamePanel searchByName;
+	private SearchResultsListPanel searchListPanel;
+	
+    /**
+     * Instantiates a new search plates page.
+     */
+    public SearchPlatesPage(RestServletAsync rpcService, RestGWT rootPage) {
+        searchByType = new SearchByTypePanel(rootPage, this, rpcService);
+        searchListPanel = new SearchResultsListPanel(rpcService, rootPage);
+    }
+
+    /**
+     * Show search results.
+     *
+     * @param result the result
+     */
+    public void showSearchResults(SearchPlatesDto result) {
+        for(PlateDto p : result.getMatchingPlates()) {
+        	searchListPanel.add(p);
+        }
+    }
+
+    
+}

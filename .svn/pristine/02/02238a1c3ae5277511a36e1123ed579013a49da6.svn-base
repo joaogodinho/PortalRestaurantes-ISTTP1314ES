@@ -1,0 +1,37 @@
+package pt.ist.rest.service.exception;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class NotExistUserException.
+ */
+public class NotExistUserException extends ServiceException {
+    
+    /** The Constant serialVersionUID. */
+    private static final long serialVersionUID = 1L;
+    
+    /** The username. */
+    private String username;
+
+    public NotExistUserException() {
+    }
+    
+    /**
+     * Instantiates a new not exist user exception.
+     *
+     * @param username the username
+     */
+    public NotExistUserException(String username) {
+        super("O utilizador não existe");
+        this.username = username;
+    }
+    
+    /* (non-Javadoc)
+     * @see pt.ist.rest.domain.service.exception.ServiceException#specificMessage()
+     */
+    @Override
+    protected String specificMessage() {
+        return "Não existe um utilizador com o nome " + this.username;
+    }
+    
+}
+

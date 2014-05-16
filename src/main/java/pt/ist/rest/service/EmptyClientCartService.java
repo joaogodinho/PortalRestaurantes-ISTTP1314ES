@@ -1,0 +1,60 @@
+package pt.ist.rest.service;
+
+import pt.ist.fenixframework.FenixFramework;
+import pt.ist.rest.domain.Client;
+import pt.ist.rest.domain.RestaurantPortal;
+import pt.ist.rest.domain.exception.UserNotFoundException;
+import pt.ist.rest.service.dto.SimpleClientDto;
+import pt.ist.rest.service.exception.ServiceException;
+import pt.ist.rest.service.exception.UnknownUserException;
+
+/**
+ * The Class EmptyClientCartService.
+ */
+public class EmptyClientCartService extends
+        RestService {
+
+    /**
+     * The client dto.
+     */
+    private final SimpleClientDto clientDto;
+
+    /**
+     * Instantiates a new close client cart service.
+     * 
+     * @param client the client
+     */
+    public EmptyClientCartService(SimpleClientDto client) {
+        clientDto = client;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see pt.ist.rest.domain.service.RestService#dispatch()
+     */
+    @Override
+    protected void dispatch() throws ServiceException {
+        RestaurantPortal portal = FenixFramework.getRoot();
+
+        Client client = null;
+
+        try {
+            client = portal.getClientByUsername(this.clientDto.getUsername());
+        } catch (UserNotFoundException e) {
+            throw new UnknownUserException(clientDto);
+        }
+
+        client.emptyCart();
+    }
+
+    /**
+     * Gets the client dto.
+     * 
+     * @return the client dto
+     */
+    public SimpleClientDto getClientDto() {
+        return clientDto;
+    }
+
+}

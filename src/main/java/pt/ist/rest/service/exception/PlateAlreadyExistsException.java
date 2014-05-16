@@ -1,0 +1,52 @@
+package pt.ist.rest.service.exception;
+
+import pt.ist.rest.service.dto.SimplePlateDto;
+import pt.ist.rest.service.dto.SimpleRestaurantDto;
+
+/**
+ * The Class PlateAlreadyExistsException. Thrown when a plate already exists on
+ * application database.
+ */
+public class PlateAlreadyExistsException extends
+        PlateException {
+
+    /** The Constant serialVersionUID. */
+    private static final long serialVersionUID = -7070943475390351153L;
+
+    /** The restaurant. */
+    private SimpleRestaurantDto restaurant;
+
+    /**
+     * Instantiates a new plate already exists exception.
+     * 
+     * @param message Specific message indicating the error when thrown.
+     * @param restaurantPlatesDto The restaurant that caused the exception.
+     * @param plate The plate that caused the exception.
+     */
+    public PlateAlreadyExistsException(String message,
+                                       SimpleRestaurantDto restaurantPlatesDto,
+                                       SimplePlateDto plate) {
+        super(message, plate);
+        this.restaurant = restaurantPlatesDto;
+    }
+
+    public PlateAlreadyExistsException(SimpleRestaurantDto restaurantPlatesDto, SimplePlateDto plate) {
+        super("O prato " + plate.getName() + " ja existe no restaurante " + restaurantPlatesDto.getName() , plate);
+        this.restaurant = restaurantPlatesDto;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * pt.ist.rest.domain.service.exception.ServiceException#specificMessage()
+     */
+    @Override
+    protected String specificMessage() {
+        return super.specificMessage() + ", restaurante: " + restaurant;
+    }
+    
+    public SimpleRestaurantDto getRestaurant() {
+        return this.restaurant;
+    }
+}

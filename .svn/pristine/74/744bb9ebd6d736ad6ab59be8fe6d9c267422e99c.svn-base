@@ -1,0 +1,156 @@
+package pt.ist.rest.presentation.client.panel;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import pt.ist.rest.mealcheck.exception.CheckAlreadyUsedException;
+import pt.ist.rest.mealcheck.exception.CheckNotExistsException;
+import pt.ist.rest.mealcheck.exception.InvalidCheckException;
+import pt.ist.rest.mealcheck.exception.UserNotFoundException;
+import pt.ist.rest.presentation.client.RestGWT;
+import pt.ist.rest.presentation.client.RestServletAsync;
+import pt.ist.rest.presentation.client.page.OpenCartPage;
+import pt.ist.rest.service.exception.CartAlreadyClosedException;
+import pt.ist.rest.service.exception.InsufficientCreditsException;
+import pt.ist.rest.service.exception.ServiceException;
+
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.dom.client.KeyUpHandler;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.TextBox;
+
+/**
+ * The Class ConfirmCartPanel.
+ */
+public class ConfirmCartPanel extends
+        FlexTable {
+
+    /**
+     * The parent.
+     */
+    private OpenCartPage parent;
+
+    /**
+     * The checks box.
+     */
+    private TextBox checksBox;
+
+    /**
+     * The confirm btn.
+     */
+    private Button confirmBtn;
+
+    /**
+     * Instantiates a new confirm cart panel.
+     * 
+     * @param rootPage the root page
+     * @param parent the parent
+     * @param rpcService the rpc service
+     */
+    public ConfirmCartPanel(final RestGWT rootPage,
+                            final OpenCartPage parent,
+                            final RestServletAsync rpcService) {
+        GWT.log("presentation.client.view.ConfirmCartPanel::constructor()");
+
+        this.parent = parent;
+
+        final int colSpan = 2;
+        this.getFlexCellFormatter().setColSpan(0, 0, colSpan);
+        
+        final String help = "Para sacar cheques, escreva os respectivos numeros, separados por virgula.";
+        Label lblHelp = new Label(help);
+        lblHelp.setStyleName("label");
+        setWidget(0, 0, lblHelp);
+        
+        
+        Label lblChecks = new Label("Cheques:");
+        lblChecks.setStyleName("label");
+        setWidget(1, 0, lblChecks);
+
+        checksBox = new TextBox();
+        setWidget(1, 1, checksBox);
+
+        checksBox.addKeyUpHandler(new KeyUpHandler() {
+            public void onKeyUp(KeyUpEvent event) {
+                if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+                    doConfirmCart(rpcService, rootPage);
+                }
+            }
+        });
+
+        confirmBtn = new Button("Pagar");
+        setWidget(2, 1, confirmBtn);
+
+        confirmBtn.addClickHandler(new ClickHandler() {
+            public void onClick(ClickEvent event) {
+                doConfirmCart(rpcService, rootPage);
+            }
+        });
+    }
+
+    /**
+     * Do confirm cart.
+     * 
+     * @param rpcService the rpc service
+     * @param rootPage the root page
+     */
+    private void doConfirmCart(final RestServletAsync rpcService, final RestGWT rootPage) {
+        final String checksString = checksBox.getValue();
+        // Verificar se string em checksBox tem o formato <vazio>||%i(,%i)*
+        if (!(checksString.isEmpty() || checksString.matches("[0-9]+(,[0-9]+)*"))) {
+            rootPage.showErrorMessage("Lista de Cheques mal-formada.");
+            return;
+        }
+
+        List<String> checksLst;
+        if (checksString.isEmpty()) {
+            checksLst = new ArrayList<String>();
+        } else {
+            GWT.log("presentation.client.page.ConfirmCartPanel::doConfirmCart() - using checks:"
+                    + checksString);
+            String[] checks = checksString.split(",");
+            checksLst = Arrays.asList(checks);
+        }
+
+        rpcService.confirmCart(rootPage.getActiveUser(), checksLst, new AsyncCallback<Void>() {
+
+            @Override
+            public void onSuccess(Void result) {
+                GWT.log("presentation.client.page.ConfirmCartPanel::doConfirmCart() - payment successful");
+                rootPage.clearErrorMessage();
+                parent.refreshOpenCart();
+                checksBox.setText("");
+            }
+
+            @Override
+            public void onFailure(Throwable caught) {
+                // TODO Melhorar as mensagens de erro
+                if (caught instanceof InvalidCheckException) {
+                    rootPage.showErrorMessage("Cheque nao valido");
+                } else if (caught instanceof CheckAlreadyUsedException) {
+                    rootPage.showErrorMessage("Cheque ja foi usado");
+                } else if (caught instanceof CheckNotExistsException) {
+                    rootPage.showErrorMessage("Cheque nao existe");
+                } else if (caught instanceof UserNotFoundException) {
+                    rootPage.showErrorMessage("Nao foi possivel encontrar cliente");
+                } else if (caught instanceof CartAlreadyClosedException) {
+                    rootPage.showErrorMessage("Nao tem um tabuleiro de compras aberto");
+                } else if (caught instanceof InsufficientCreditsException) {
+                    rootPage.showErrorMessage("Nao tem creditos suficientes");
+                } else if (caught instanceof ServiceException) {
+                    rootPage.showErrorMessage("Excepcao inesperada");
+                }
+                GWT.log("presentation.client.page.ConfirmCartPanel::doConfirmCart() - payment unsuccessful");
+            }
+        });
+
+    }
+}

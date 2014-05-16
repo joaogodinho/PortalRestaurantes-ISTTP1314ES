@@ -1,0 +1,188 @@
+package pt.ist.rest.presentation.server;
+
+import java.util.List;
+
+import pt.ist.chequerefeicao.local.ChequeRefeicaoLocal;
+import pt.ist.rest.DatabaseBootstrap;
+import pt.ist.rest.mealcheck.MealCheck;
+import pt.ist.rest.mealcheck.exception.CheckAlreadyUsedException;
+import pt.ist.rest.mealcheck.exception.CheckNotExistsException;
+import pt.ist.rest.mealcheck.exception.InvalidCheckException;
+import pt.ist.rest.mealcheck.exception.UserNotFoundException;
+import pt.ist.rest.presentation.client.RestServlet;
+import pt.ist.rest.service.AddPlateToClientCartService;
+import pt.ist.rest.service.CloseClientCartService;
+import pt.ist.rest.service.ListMenuService;
+import pt.ist.rest.service.ListRestaurantsService;
+import pt.ist.rest.service.LoginClientService;
+import pt.ist.rest.service.SearchPlateByTypeService;
+import pt.ist.rest.service.SearchPlateService;
+import pt.ist.rest.service.UpdateClientCreditService;
+import pt.ist.rest.service.UserCartService;
+import pt.ist.rest.service.VerifyPlateOnCartService;
+import pt.ist.rest.service.dto.PlateDto;
+import pt.ist.rest.service.dto.RestaurantMenuDto;
+import pt.ist.rest.service.dto.RestaurantsOnPortalDto;
+import pt.ist.rest.service.dto.SearchPlatesDto;
+import pt.ist.rest.service.dto.ShoppingCartDto;
+import pt.ist.rest.service.dto.SimpleClientDto;
+import pt.ist.rest.service.dto.SimpleRestaurantDto;
+import pt.ist.rest.service.dto.UserDto;
+import pt.ist.rest.service.exception.ServiceException;
+
+import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+
+/**
+ * The server-side implementation of the RPC service.
+ */
+@SuppressWarnings("serial")
+public class RestServletImpl extends
+        RemoteServiceServlet
+        implements RestServlet {
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * pt.ist.rest.presentation.client.RestServlet#login(pt.ist.rest.service.dto.UserDto)
+     */
+    @Override
+    public SimpleClientDto login(UserDto person) throws ServiceException {
+        LoginClientService service = new LoginClientService(person);
+        service.execute();
+
+        return service.getResult();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see pt.ist.rest.presentation.client.RestServlet#getRestaurants()
+     */
+    @Override
+    public RestaurantsOnPortalDto getRestaurants() throws ServiceException {
+        RestaurantsOnPortalDto restaurantsOnPortalDto = null;
+        ListRestaurantsService listRestaurantsService = new ListRestaurantsService();
+
+        listRestaurantsService.execute();
+        restaurantsOnPortalDto = listRestaurantsService.getResult();
+
+        if (restaurantsOnPortalDto == null) {
+            System.out.println("The restaurant Dto is null!");
+        }
+        return restaurantsOnPortalDto;
+    }
+
+    //    /**
+    //     * Escape an html string. Escaping data received from the client helps to prevent
+    //     * cross-site script vulnerabilities.
+    //     * 
+    //     * @param html the html string to escape
+    //     * @return the escaped string
+    //     */
+    //    private String escapeHtml(String html) {
+    //        if (html == null) {
+    //            return null;
+    //        }
+    //        return html.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+    //    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see pt.ist.rest.presentation.client.RestServlet#initServer()
+     */
+    @Override
+    public void initServer() {
+        DatabaseBootstrap.init();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see pt.ist.rest.presentation.client.RestServlet#getMenu(pt.ist.rest.service.dto.
+     * SimpleRestaurantDto)
+     */
+    @Override
+    public RestaurantMenuDto getMenu(SimpleRestaurantDto restaurant) throws ServiceException {
+        RestaurantMenuDto result = null;
+        ListMenuService menu = new ListMenuService(restaurant);
+        menu.execute();
+        result = menu.getResult();
+        return result;
+    }
+
+    /* (non-Javadoc)
+     * @see pt.ist.rest.presentation.client.RestServlet#searchPlatesByType(java.lang.String)
+     */
+    @Override
+    public SearchPlatesDto searchPlatesByType(String type) throws ServiceException {
+        SearchPlatesDto result = null;
+        SearchPlateService search = new SearchPlateByTypeService(type);
+        search.execute();
+        result = search.getResult();
+        return result;
+    }
+    
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * pt.ist.rest.presentation.client.RestServlet#addPlateToCart(pt.ist.rest.service.
+     * dto.SimpleClientDto, pt.ist.rest.service.dto.PlateDto, int)
+     */
+    @Override
+    public void addPlateToCart(SimpleClientDto client, PlateDto plate, int quant) throws ServiceException {
+        AddPlateToClientCartService addService = new AddPlateToClientCartService(client, plate,
+                quant);
+        addService.execute();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * pt.ist.rest.presentation.client.RestServlet#getOpenCart(pt.ist.rest.service.dto
+     * .SimpleClientDto)
+     */
+    @Override
+    public ShoppingCartDto getOpenCart(SimpleClientDto clientDto) throws ServiceException {
+        UserCartService userCart = new UserCartService(clientDto);
+        userCart.execute();
+        ShoppingCartDto cart = userCart.getResult();
+
+        return cart;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * pt.ist.rest.presentation.client.RestServlet#confirmCart(pt.ist.rest.service.dto
+     * .SimpleClientDto, java.util.List)
+     */
+    @Override
+    public void confirmCart(SimpleClientDto clientDto, List<String> checks) throws InvalidCheckException,
+            CheckAlreadyUsedException,
+            CheckNotExistsException,
+            UserNotFoundException,
+            ServiceException {
+        // TODO Trocar para ChequeRefeicao remoto
+        MealCheck mealCheck = new MealCheck(new ChequeRefeicaoLocal());
+
+        double sum = mealCheck.sacar(clientDto.getUsername(), checks);
+
+        (new UpdateClientCreditService(clientDto, sum)).execute();
+
+        (new CloseClientCartService(clientDto)).execute();
+    }
+
+    @Override
+    public Boolean isPlateOnCart(SimpleClientDto client, PlateDto plate) throws ServiceException {
+        Boolean result = false;
+        VerifyPlateOnCartService verify = new VerifyPlateOnCartService(client, plate);
+        verify.execute();
+        result = verify.getResult();
+        return result;
+    }
+}

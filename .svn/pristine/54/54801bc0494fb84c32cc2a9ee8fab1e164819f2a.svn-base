@@ -1,0 +1,30 @@
+package pt.ist.rest.service;
+
+import java.util.List;
+
+import pt.ist.fenixframework.FenixFramework;
+import pt.ist.rest.Utilities.PlateType;
+import pt.ist.rest.domain.Plate;
+import pt.ist.rest.domain.RestaurantPortal;
+
+/**
+ * The Class SearchPlateByNameService.
+ */
+public final class SearchPlateByTypeService extends
+        SearchPlateService {
+
+    /**
+     * Instantiates a new search plate by name service.
+     *
+     * @param type the type
+     */
+    public SearchPlateByTypeService(String type) {
+        super(type);
+    }
+    
+    @Override
+    protected List<Plate> getMatchingPlates(String match) {
+        RestaurantPortal portal = FenixFramework.getRoot();
+        return portal.getPlatesByType(Enum.valueOf(PlateType.class, match));
+    }
+}

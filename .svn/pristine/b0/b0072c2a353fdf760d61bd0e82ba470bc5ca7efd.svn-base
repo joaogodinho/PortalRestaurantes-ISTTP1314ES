@@ -1,0 +1,48 @@
+package pt.ist.rest.service.dto;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * The Class ShoppingCartDto.
+ */
+public class ShoppingCartDto
+        implements java.io.Serializable {
+
+    /**
+     * The Constant serialVersionUID.
+     */
+    private static final long serialVersionUID = -6147017869659660173L;
+
+    /**
+     * The plates on cart.
+     */
+    protected List<PlateQuantityDto> platesOnCart;
+
+    /**
+     * Instantiates a new shopping cart dto.
+     *
+     * @param platesOnCart the plates on cart
+     */
+    public ShoppingCartDto(List<PlateQuantityDto> platesOnCart) {
+        List<PlateQuantityDto> copy = new ArrayList<PlateQuantityDto>();
+        for (PlateQuantityDto plateQuatities : platesOnCart)
+            copy.add(plateQuatities);
+        this.platesOnCart = copy;
+    }
+    
+ // FIXME: must have this constructor
+    public ShoppingCartDto() { }
+
+    /**
+     * Gets the plate quantities.
+     * 
+     * @return the plate quantities
+     */
+    public List<PlateQuantityDto> getPlateQuantities() {
+        List<PlateQuantityDto> copy = new ArrayList<PlateQuantityDto>();
+        for (PlateQuantityDto plateQuatities : this.platesOnCart)
+            copy.add(plateQuatities);
+        return copy;
+    }
+}

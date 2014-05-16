@@ -1,0 +1,60 @@
+package pt.ist.registofatura.remote;
+
+import java.util.List;
+
+import javax.xml.datatype.XMLGregorianCalendar;
+
+import pt.ist.rest.invoiceregistry.InvoiceRegistryImplementor;
+import pt.ist.rest.invoiceregistry.exception.ClienteInexistente_Exception;
+import pt.ist.rest.invoiceregistry.exception.EmissorInexistente_Exception;
+import pt.ist.rest.invoiceregistry.exception.Fatura;
+import pt.ist.rest.invoiceregistry.exception.FaturaInvalida_Exception;
+import pt.ist.rest.invoiceregistry.exception.RegistoFaturaPortType;
+import pt.ist.rest.invoiceregistry.exception.Serie;
+import pt.ist.rest.invoiceregistry.exception.TotaisIncoerentes_Exception;
+
+/**
+ * The Class RegistoFaturaClient.
+ */
+public class RegistoFaturaClient
+        implements InvoiceRegistryImplementor {
+
+    /**
+     * The port.
+     */
+    private RegistoFaturaPortType port;
+    
+    public RegistoFaturaClient(String uddiURL, String serverName) {
+        if (uddiURL == null || serverName == null) {
+            throw new IllegalArgumentException("Argument(s) missing!");
+        }
+
+        port = (RegistoFaturaPortType) new FrontEnd(serverName, uddiURL);
+    }
+
+    @Override
+    public Serie pedirSerie(int nifEmissor) throws EmissorInexistente_Exception {
+        // TODO Auto-generated method stub
+        return port.pedirSerie(nifEmissor);
+    }
+
+    @Override
+    public void comunicarFatura(Fatura fatura)
+            throws ClienteInexistente_Exception, EmissorInexistente_Exception,
+            FaturaInvalida_Exception, TotaisIncoerentes_Exception {
+        port.comunicarFatura(fatura);
+    }
+
+    @Override
+    public List<Fatura> listarFacturas(
+            Integer nifEmissor, Integer nifCliente)
+            throws ClienteInexistente_Exception, EmissorInexistente_Exception {
+        return port.listarFacturas(nifEmissor, nifCliente);
+    }
+
+    @Override
+    public int consultarIVADevido(int nifEmissor, XMLGregorianCalendar ano)
+            throws EmissorInexistente_Exception {
+        return port.consultarIVADevido(nifEmissor, ano);
+    }
+}

@@ -1,0 +1,187 @@
+package pt.ist.rest.presentation.client.panel;
+
+import pt.ist.rest.presentation.client.RestGWT;
+import pt.ist.rest.presentation.client.RestServletAsync;
+import pt.ist.rest.service.dto.PlateDto;
+
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.Label;
+
+/**
+ * The Class MenuListPanel.
+ */
+public class MenuListPanel extends
+        FlexTable {
+
+    /**
+     * The rpc service.
+     */
+    private RestServletAsync rpcService;
+
+    /**
+     * The root page.
+     */
+    private final RestGWT rootPage;
+
+    //    private final Map<String, HandlerRegistration> clickHandlers = new HashMap<>();
+
+    /**
+     * Instantiates a new menu list panel.
+     * 
+     * @param rpcService the rpc service
+     * @param rootPage the root page
+     */
+    public MenuListPanel(RestServletAsync rpcService, RestGWT rootPage) {
+        GWT.log("presentation.client.view.MenuListPanel::constructor()");
+        // set RPC service
+        this.rpcService = rpcService;
+
+        final int colSpan = 6;
+        this.getFlexCellFormatter().setColSpan(0, 0, colSpan);
+        Label title = new Label("Menu");
+        title.setStyleName("h1-label");
+        this.setWidget(0, 0, title);
+
+        // add header row:
+        final int colName = 1;
+        final int colTipo = 1;
+        final int colCalorias = 2;
+        final int colPreco = 3;
+        final int colClassificacao = 4;
+        final int colId = colSpan;
+        setText(colName, 0, "Nome");
+        setText(colName, colTipo, "Tipo");
+        setText(colName, colCalorias, "Calorias");
+        setText(colName, colPreco, "Preco");
+        setText(colName, colClassificacao, "Classificacao");
+        setText(colName, colId, "ID"); // Hidden field
+        // add style to row:
+        //getRowFormatter().addStyleName(0, "restaurantsTableHeader");
+        this.rootPage = rootPage;
+    }
+
+    /**
+     * Clear menu list.
+     */
+    public void clearMenuList() {
+        GWT.log("presentation.client.view.MenuListPanel::clearMenuList()");
+        int rowCount = getRowCount();
+        for (int i = rowCount - 1; i > 1; i--) {
+            removeRow(i);
+        }
+    }
+
+    private ClickHandler addClickHandlerToPlateButton(final PlateDto plate) {
+        return new ClickHandler() {
+
+            @Override
+            public void onClick(ClickEvent event) {
+
+                rpcService.addPlateToCart(rootPage.getActiveUser(), plate, 1,
+                        new AsyncCallback<Void>() {
+
+                            @Override
+                            public void onFailure(Throwable caught) {
+                                GWT.log("presentation.client.view.MenuListPanel::add(" + plate
+                                        + ") failed to add plate to cart");
+                            }
+
+                            @Override
+                            public void onSuccess(Void result) {
+                                GWT.log("presentation.client.view.MenuListPanel::add(" + plate
+                                        + ") added plate to cart");
+                                //                                clickHandlers.remove(plate.getName()).removeHandler();
+                                //                                button.setText("Ja adicionado");
+                                //                                button.setEnabled(false);
+                                rootPage.getOpenCartPage().refreshOpenCart();
+                            }
+                        });
+            }
+        };
+    }
+
+    /**
+     * Adds the.
+     * 
+     * @param plate the plate
+     */
+    public void add(final PlateDto plate) {
+        GWT.log("presentation.client.view.MenuListPanel::add(" + plate + ")");
+        // get the number of the next row:
+        int row = getRowCount() + 1;
+
+        // add name and phone number (and set style from CSS)
+        final int colName = 0;
+        final int colTipo = 1;
+        final int colCalorias = 2;
+        final int colPreco = 3;
+        final int colClassificacao = 4;
+        final int colId = 6;
+        setText(row, colName, plate.getName());
+        setText(row, colTipo, plate.getType());
+        setText(row, colCalorias, String.valueOf(plate.getCalories()));
+        setText(row, colPreco, String.valueOf(plate.getPrice()));
+        setText(row, colClassificacao, String.valueOf(plate.getClassification()));
+        setText(row, colId, String.valueOf(plate.getId()));
+
+        // if we want styles across columns (and data type):
+        // getCellFormatter().addStyleName(row, 0, "restaurantsTableNameCell");
+        // getCellFormatter().addStyleName(row, 1, "restaurantsTablePhoneCell");
+        //
+        // // if we want alternate colored rows:
+        // if ((row % 2) == 0) {
+        // getRowFormatter().addStyleName(row, "restaurantsTableCellEven");
+        // } else {
+        // getRowFormatter().addStyleName(row, "restaurantsTableCellOdd");
+        // }
+
+        // set show menu button
+
+        final Button addToCartButton = new Button("Adicionar");
+
+        //        rpcService.isPlateOnCart(this.rootPage.getActiveUser(), plate,
+        //                new AsyncCallback<Boolean>() {
+        //
+        //                    @Override
+        //                    public void onSuccess(Boolean result) {
+        //                        GWT.log("presentation.client.view.MenuListPanel::add() verify plate on cart");
+        //                        if (result) {
+        //                            addToCartButton.setText("Ja adicionado");
+        //                        } else {
+        //                            // add handlers for clicks
+        //                            HandlerRegistration handler = addToCartButton
+        //                                    .addClickHandler(addClickHandlerToPlateButton(plate, addToCartButton));
+        //                            clickHandlers.put(plate.getName(), handler);
+        //                        }
+        //
+        //                    }
+        //
+        //                    @Override
+        //                    public void onFailure(Throwable caught) {
+        //                        GWT.log("presentation.client.view.MenuListPanel::add() error on isPlateOnCart");
+        //                        caught.printStackTrace();
+        //                    }
+        //                });
+        //        HandlerRegistration handler = 
+        addToCartButton.addClickHandler(addClickHandlerToPlateButton(plate));
+        //        clickHandlers.put(plate.getName(), handler);
+        // showMenuButton.setStyleName("deleteContactButton");
+
+        final int colAdd = 5;
+        setWidget(row, colAdd, addToCartButton);
+
+        // add handlers for clicks
+        //        addToCartButton.addClickHandler(new ClickHandler() {
+        //            @Override
+        //            public void onClick(ClickEvent event) {
+        //
+        //                //TODO rpcService.addPlateToCart ou algo do genero
+        //            }
+        //        });
+    }
+}

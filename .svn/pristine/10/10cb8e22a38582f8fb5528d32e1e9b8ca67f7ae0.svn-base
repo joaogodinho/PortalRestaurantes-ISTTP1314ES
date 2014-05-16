@@ -1,0 +1,90 @@
+package pt.ist.rest.service.exception;
+
+import pt.ist.rest.service.dto.PlateDto;
+import pt.ist.rest.service.dto.SimpleClientDto;
+
+/**
+ * The Class InvalidLikeException.
+ * 
+ * Thrown when some error happens with clients liking plates.
+ */
+public class InvalidLikeException extends ServiceException {
+
+    /**
+     * The Constant serialVersionUID.
+     */
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * The client.
+     */
+    protected final SimpleClientDto client;
+
+    /**
+     * The plate.
+     */
+    protected final PlateDto plate;
+
+    /**
+     * Instantiates a new invalid like exception.
+     * 
+     * @param message
+     *            Specific message indicating the error when thrown.
+     * @param client
+     *            The client that caused the exception.
+     * @param plate
+     *            The plate that caused the exception.
+     */
+    public InvalidLikeException(String message, SimpleClientDto client,
+            PlateDto plate) {
+        super(message);
+        this.client = client;
+        this.plate = plate;
+    }
+
+    /**
+     * Instantiates a new invalid like exception.
+     * 
+     * @param message
+     *            Specific message indicating the error when thrown.
+     * @param client
+     *            The client that caused the exception.
+     * @param plate
+     *            The plate that caused the exception.
+     */
+    public InvalidLikeException(SimpleClientDto client, PlateDto plate) {
+        super("O cliente excedeu o numero maximo de gostos que pode ter");
+        this.client = client;
+        this.plate = plate;
+    }
+
+    /**
+     * Gets the client.
+     * 
+     * @return the client
+     */
+    public SimpleClientDto getClient() {
+        return client;
+    }
+
+    /**
+     * Gets the plate.
+     * 
+     * @return the plate
+     */
+    public PlateDto getPlate() {
+        return plate;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * pt.ist.rest.domain.service.exception.ServiceException#specificMessage()
+     */
+    @Override
+    protected String specificMessage() {
+        return "client: " + client + ", plate: " + plate;
+    }
+
+}
